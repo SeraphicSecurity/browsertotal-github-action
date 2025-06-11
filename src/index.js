@@ -3,6 +3,7 @@ const github = require('@actions/github');
 const { chromium, firefox, webkit } = require('playwright');
 const fs = require('fs').promises;
 const path = require('path');
+const { execSync } = require('child_process');
 
 /**
  * Maps grade letters to numeric values for comparison
@@ -129,6 +130,33 @@ async function run() {
 
     if (!['json', 'summary', 'both'].includes(outputFormat)) {
       throw new Error(`Invalid output format: ${outputFormat}. Must be json, summary, or both.`);
+    }
+
+    // Install browsers if needed
+    core.info(`Installing Playwright browsers...`);
+    try {
+      // Install only the browser we need to save time
+      const browserMap = {
+        'chrome': 'chromium',
+        'firefox': 'firefox',
+        'webkit': 'webkit'
+      };
+      const playwrightBrowser = browserMap[browserType];
+      
+      execSync(`npx playwright install ${playwrightBrowser}`, {
+        stdio: 'inherit',
+        env: { ...process.env, PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '0' }
+      });
+      
+      // Also install dependencies for the browser
+      execSync(`npx playwright install-deps ${playwrightBrowser}`, {
+        stdio: 'inherit'
+      });
+      
+      core.info(`Browser ${playwrightBrowser} installed successfully`);
+    } catch (installError) {
+      core.warning(`Failed to install browser dependencies: ${installError.message}`);
+      // Continue anyway, as the browser might already be installed
     }
 
     core.info(`Starting browser posture scan with ${browserType} browser...`);
