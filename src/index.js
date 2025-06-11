@@ -336,6 +336,11 @@ async function run() {
       }
     }
   } finally {
+    core.info('Exiting process in 4 seconds');
+    setTimeout(() => {
+      core.info('Exiting process');
+      process.exit(0);
+    }, 4000);
     // Clean up browser resources
     if (browser) {
       try {
@@ -363,11 +368,7 @@ async function run() {
       }
     }
     
-    // Force exit after a short delay to ensure all resources are released
-    setTimeout(() => {
-      core.info('Exiting process');
-      process.exit(0);
-    }, 4000);
+    
   }
 }
 
