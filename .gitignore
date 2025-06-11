@@ -6,7 +6,7 @@ node_modules/
 
 # Test results
 browsertotal-results/
-*.png
+
 
 # Logs
 logs
