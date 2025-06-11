@@ -57,9 +57,13 @@ async function postPRComment(octokit, summary, scanResults) {
     };
     
     const commentBody = `${commentIdentifier}
-# 🛡️ Browser Security Posture Scan Results
-
-${gradeEmoji[scanResults.score.grade] || '⚪'} **Security Grade: ${scanResults.score.grade}**
+<div align="center">
+  <img src="https://raw.githubusercontent.com/SeraphicSecurity/browsertotal-github-action/main/assets/256.png" alt="BrowserTotal" width="128" height="128">
+  
+  # 🛡️ Browser Security Posture Scan Results
+  
+  ${gradeEmoji[scanResults.score.grade] || '⚪'} **Security Grade: ${scanResults.score.grade}**
+</div>
 
 ${summary}
 
@@ -74,7 +78,9 @@ ${JSON.stringify(scanResults, null, 2)}
 </details>
 
 ---
-*🤖 This comment is automatically updated on each commit*`;
+<div align="center">
+  <sub>🤖 Powered by <a href="https://browsertotal.com">BrowserTotal</a> • This comment is automatically updated on each commit</sub>
+</div>`;
     
     if (existingComment) {
       // Update existing comment
@@ -236,7 +242,9 @@ async function run() {
       // Also write summary to GitHub Action summary
       await core.summary
         .addHeading('Browser Posture Scan Results')
+        .addRaw(`<div align="center"><img src="https://raw.githubusercontent.com/SeraphicSecurity/browsertotal-github-action/main/assets/256.png" alt="BrowserTotal" width="128" height="128"></div>`)
         .addRaw(summary)
+        .addRaw(`<hr><div align="center"><sub>🤖 Powered by <a href="https://browsertotal.com">BrowserTotal</a></sub></div>`)
         .write();
     } else if (commentOnPR) {
       // Generate summary for PR comment even if not requested in output

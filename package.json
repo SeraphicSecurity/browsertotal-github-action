@@ -8,7 +8,8 @@
     "test": "jest",
     "lint": "eslint src/**/*.js",
     "format": "prettier --write 'src/**/*.js'",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "pre-publish": "node pre-publish.js"
   },
   "repository": {
     "type": "git",

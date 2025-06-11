@@ -2,7 +2,7 @@
 node_modules/
 
 # Build output
-dist/
+# dist/ - Commented out because GitHub Actions need the compiled files
 
 # Test results
 browsertotal-results/
