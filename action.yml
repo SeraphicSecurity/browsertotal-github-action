@@ -13,7 +13,7 @@ inputs:
   timeout:
     description: 'Maximum time to wait for scan completion in milliseconds'
     required: false
-    default: '600000'
+    default: '1800000'
   browser:
     description: 'Browser to use for scanning (chrome, firefox, or webkit)'
     required: false

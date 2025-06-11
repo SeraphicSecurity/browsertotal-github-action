@@ -34,7 +34,7 @@ A GitHub Action that performs comprehensive security posture scanning of web bro
 |-------|-------------|----------|---------|
 | `browser` | Browser to use for scanning (`chrome`, `firefox`, or `webkit`) | No | `chrome` |
 | `output-format` | Output format for results (`json`, `summary`, or `both`) | No | `json` |
-| `timeout` | Maximum time to wait for scan completion (milliseconds) | No | `600000` |
+| `timeout` | Maximum time to wait for scan completion (milliseconds) | No | `1800000` |
 | `headless` | Run browser in headless mode (`true`/`false`) | No | `false` |
 | `fail-on-low-score` | Fail if grade is below threshold (`A`, `B`, `C`, `D`, `F`, or `none`) | No | `none` |
 | `comment-on-pr` | Post scan results as a comment on pull requests (`true`/`false`) | No | `true` |

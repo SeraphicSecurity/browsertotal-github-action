@@ -16,6 +16,8 @@ const GRADE_VALUES = {
   'F': 1
 };
 
+module.exports = { GRADE_VALUES };
+
 /**
  * Creates or updates a comment on the PR with scan results
  */
@@ -116,7 +118,7 @@ async function run() {
   try {
     // Get inputs
     const outputFormat = core.getInput('output-format');
-    const timeout = parseInt(core.getInput('timeout')) || 60000;
+    const timeout = parseInt(core.getInput('timeout')) || 1800000;
     const browserType = core.getInput('browser').toLowerCase();
     const headless = core.getInput('headless') === 'true';
     const failThreshold = core.getInput('fail-on-low-score').toUpperCase();
@@ -372,5 +374,10 @@ function generateSummary(results) {
   return summary;
 }
 
-// Run the action
-run(); 
+if (require.main === module) {
+  run();
+}
+
+module.exports.run = run;
+module.exports.generateSummary = generateSummary;
+module.exports.postPRComment = postPRComment; 
