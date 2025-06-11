@@ -61,7 +61,7 @@ async function postPRComment(octokit, summary, scanResults) {
     
     const commentBody = `${commentIdentifier}
 <div align="center">
-  <img src="https://raw.githubusercontent.com/SeraphicSecurity/browsertotal-github-action/main/assets/256.png" alt="BrowserTotal" width="128" height="128">
+  <img src="https://raw.githubusercontent.com/SeraphicSecurity/browsertotal-github-action/master/assets/256.png" alt="BrowserTotal" width="128" height="128">
   
   # 🛡️ Browser Security Posture Scan Results
   
@@ -205,17 +205,25 @@ async function run() {
       _scanTask.resolve(results);
     });
 
-    // Inject event listener
+    // Inject event listener with one-time execution
     await page.addInitScript(() => {
-      window.addEventListener('scan_complete', async (event) => {
+      let captured = false;
+      const scanHandler = async (event) => {
+        if (captured) return; // Prevent multiple captures
+        captured = true;
+        
         try {
           console.log('Scan completed event captured');
-          
           await window.captureScanResults(event.detail);
+          
+          // Remove the listener after capturing
+          window.removeEventListener('scan_complete', scanHandler);
         } catch (e) {
           console.error('Failed to capture scan results:', e);
         }
-      });
+      };
+      
+      window.addEventListener('scan_complete', scanHandler);
     });
 
    
@@ -233,6 +241,11 @@ async function run() {
     }
 
     core.info('Scan completed successfully');
+    
+    // Clean up event listeners to prevent hanging
+    await page.evaluate(() => {
+      window.removeEventListener('scan_complete', window.captureScanResults);
+    }).catch(() => {});
 
    
 
@@ -323,9 +336,38 @@ async function run() {
       }
     }
   } finally {
+    // Clean up browser resources
     if (browser) {
-      await browser.close();
+      try {
+        core.info('Closing browser...');
+        
+        // Close all pages and contexts first
+        const contexts = browser.contexts();
+        for (const context of contexts) {
+          const pages = context.pages();
+          for (const page of pages) {
+            await page.close().catch(() => {});
+          }
+          await context.close().catch(() => {});
+        }
+        
+        // Close the browser with a timeout
+        await Promise.race([
+          browser.close(),
+          new Promise((resolve) => setTimeout(resolve, 5000))
+        ]);
+        
+        core.info('Browser closed successfully');
+      } catch (closeError) {
+        core.warning(`Failed to close browser cleanly: ${closeError.message}`);
+      }
     }
+    
+    // Force exit after a short delay to ensure all resources are released
+    setTimeout(() => {
+      core.info('Exiting process');
+      process.exit(0);
+    }, 4000);
   }
 }
 
