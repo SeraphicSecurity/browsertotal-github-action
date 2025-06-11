@@ -1,0 +1,107 @@
+name: Test Browser Posture Scanner
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  test-action:
+    runs-on: ubuntu-latest
+    name: Test Browser Security Scan
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Build action
+        run: npm run build
+
+      - name: Run Browser Security Scan
+        id: scan
+        uses: ./
+        with:
+          browser: chrome
+          output-format: both
+          timeout: 90000
+          headless: true
+
+      - name: Display Results
+        run: |
+          echo "## Scan Results"
+          echo "Grade: ${{ steps.scan.outputs.grade }}"
+          echo "Score: ${{ steps.scan.outputs.score }}/${{ steps.scan.outputs.max-score }}"
+          echo "Passed: ${{ steps.scan.outputs.passed-count }}/${{ steps.scan.outputs.total-tests }}"
+          echo "Failed: ${{ steps.scan.outputs.failed-count }}"
+
+      - name: Upload Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-scan-results
+          path: browsertotal-results/
+
+  test-multi-browser:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        browser: [chrome, firefox]
+    name: Test ${{ matrix.browser }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - run: |
+          npm ci
+          npx playwright install --with-deps ${{ matrix.browser == 'chrome' && 'chromium' || matrix.browser }}
+          npm run build
+
+      - name: Security Scan - ${{ matrix.browser }}
+        uses: ./
+        with:
+          browser: ${{ matrix.browser }}
+          output-format: summary
+          headless: true
+
+  test-grade-threshold:
+    runs-on: ubuntu-latest
+    name: Test Grade Threshold
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          npm run build
+
+      - name: Test with Grade Threshold
+        id: threshold-test
+        uses: ./
+        with:
+          browser: chrome
+          fail-on-low-score: A
+          headless: true
+
+      - name: Check Threshold Result
+        if: always()
+        run: |
+          echo "Action outcome: ${{ steps.threshold-test.outcome }}"
+          echo "Grade achieved: ${{ steps.threshold-test.outputs.grade }}" 

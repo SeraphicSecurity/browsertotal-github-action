@@ -1,0 +1,60 @@
+name: 'BrowserTotal Posture Scanner'
+description: 'Performs a security posture scan of a browser using BrowserTotal and returns detailed security assessment results'
+author: 'A.C'
+branding:
+  icon: 'shield'
+  color: 'blue'
+
+inputs:
+  output-format:
+    description: 'Output format for the scan results (json, summary, or both)'
+    required: false
+    default: 'json'
+  timeout:
+    description: 'Maximum time to wait for scan completion in milliseconds'
+    required: false
+    default: '60000'
+  browser:
+    description: 'Browser to use for scanning (chrome, firefox, or webkit)'
+    required: false
+    default: 'chrome'
+  headless:
+    description: 'Run browser in headless mode (true/false)'
+    required: false
+    default: 'false'
+  fail-on-low-score:
+    description: 'Fail the action if the security grade is below this threshold (A, B, C, D, F, or none)'
+    required: false
+    default: 'none'
+  comment-on-pr:
+    description: 'Post scan results as a comment on the pull request (true/false)'
+    required: false
+    default: 'true'
+  github-token:
+    description: 'GitHub token for PR commenting (defaults to github.token)'
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  score:
+    description: 'Current security score'
+  max-score:
+    description: 'Maximum possible security score'
+  grade:
+    description: 'Security grade (A-F)'
+  passed-count:
+    description: 'Number of passed security tests'
+  failed-count:
+    description: 'Number of failed security tests'
+  total-tests:
+    description: 'Total number of security tests'
+  results-json:
+    description: 'Full scan results in JSON format'
+  results-file:
+    description: 'Path to the saved results file'
+  summary:
+    description: 'Human-readable summary of the scan results'
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js' 
